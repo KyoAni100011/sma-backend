@@ -1,7 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is your Prisma schema file.
+// Learn more at: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Looking for ways to optimize your queries or scale with serverless/edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
@@ -26,24 +26,35 @@ enum UserStatus {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  name String
-  email String @unique
-  password String 
-  role Role @default(USER)
-  status UserStatus @default(PENDING)
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  status    UserStatus @default(PENDING)
   lastLogin DateTime?
-  createdAt DateTime @default(now())
-  profile Profile?
+  createdAt DateTime  @default(now())
+  profile   Profile?
+  post      Post[]
 }
 
 model Profile {
-  id Int @id @default(autoincrement())
-  bio String?
-  phone String?
+  id          Int       @id @default(autoincrement())
+  bio         String?
+  phone       String?
   dateOfBirth DateTime?
-  address String?
-  userId Int @unique
-  user User @relation(fields : [userId], references : [id])
+  address     String?
+  userId      Int       @unique
+  user        User      @relation(fields: [userId], references: [id])
 }
 
+model Post {
+  id        Int      @id @default(autoincrement())
+  content   String
+  imgUrl    String?
+  imgName   String?
+  videoUrl  String?
+  videoName String?
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+}
