@@ -2,11 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import userRouter from './routes/user.route'
 import cors from 'cors'
-import fs from "fs";
 import postRouter from "./routes/post.route";
-import { Request, Response } from "express";
-import multer from "multer";
-import { authorize, uploadFileToDrive } from "./services/image.service";
 import uploadRouter from "./routes/upload.route";
 
 const app = express();

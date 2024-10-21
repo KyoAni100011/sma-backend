@@ -3,12 +3,13 @@ import prisma from "../prisma";
 import { StatusCodes } from "http-status-codes";
 
 const createPost = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.body;
+  const { userId, content, imgUrl, imgName, imgPublicId, videoPublicId, videoUrl, videoName } = req.body;
 
   try {
     const existingUser = await prisma.user.findUnique({
       where: { id: userId },
     });
+    
     if (!existingUser) {
       res.status(StatusCodes.BAD_REQUEST).json({ message: "User not found" });
       return;
@@ -16,55 +17,83 @@ const createPost = async (req: Request, res: Response): Promise<void> => {
 
     const newPost = await prisma.post.create({
       data: {
-        content: req.body.content,
-        imgUrl: req.body.imgUrl,
-        imgName: req.body.imgName,
-        videoUrl: req.body.videoUrl,
-        videoName: req.body.videoName,
-        userId: userId,
+        content,
+        imgUrl,
+        imgName,
+        imgPublicId,
+        videoUrl,
+        videoName,
+        videoPublicId,
+        userId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
-    res.status(StatusCodes.OK).json(newPost);
+    res.status(StatusCodes.CREATED).json(newPost);
   } catch (error: any) {
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
 
-// const  getPosts = async (req: Request, res: Response) => {
-//         try {
-//             const postId = req.params.id; // Lấy ID từ tham số URL
-//             const post = await readPost(postId);
-//             return res.status(200).json(post); // Trả về bài viết
-//         } catch (error) {
-//             return res.status(404).json({ message: "Bài viết không tìm thấy", error });
-//         }
-//     },
+const getPosts = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const posts = await prisma.post.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
 
-// const updatePost = async (req: Request, res: Response) => {
-//         try {
-//             const postId = req.params.id; // Lấy ID từ tham số URL
-//             const updatedData = req.body; // Nhận dữ liệu cập nhật từ body
-//             const updatedPost = await updatePost(postId, updatedData);
-//             return res.status(200).json(updatedPost); // Trả về bài viết đã cập nhật
-//         } catch (error) {
-//             return res.status(500).json({ message: "Cập nhật bài viết thất bại", error });
-//         }
-//     },
+    res.status(StatusCodes.OK).json(posts);
+  } catch (error) {
+    res.status(StatusCodes.NOT_FOUND).json({ message: "Posts not found", error });
+  }
+};
 
-//  const   deletePost =  async (req: Request, res: Response) => {
-//         try {
-//             const postId = req.params.id; // Lấy ID từ tham số URL
-//             await deletePost(postId);
-//             return res.status(204).send(); // Trả về mã trạng thái 204 No Content
-//         } catch (error) {
-//             return res.status(500).json({ message: "Xóa bài viết thất bại", error });
-//         }
-//     }
-// };
+const updatePost = async (req: Request, res: Response): Promise<void> => {
+  const postId = parseInt(req.params.id);
+  const updatedData = req.body;
 
-// export default postController;
+  try {
+    const updatedPost = await prisma.post.update({
+      where: { id: postId },
+      data: updatedData,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
 
-export { createPost };
+    res.status(StatusCodes.OK).json(updatedPost);
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Failed to update post", error });
+  }
+};
+
+const deletePost = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const postId = parseInt(req.params.id);
+    await prisma.post.delete({ where: { id: postId } });
+    res.status(StatusCodes.NO_CONTENT).send();
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Failed to delete post", error });
+  }
+};
+
+export { createPost, getPosts, updatePost, deletePost };
