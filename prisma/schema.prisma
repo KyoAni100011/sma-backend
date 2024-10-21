@@ -35,7 +35,9 @@ model User {
   lastLogin DateTime?
   createdAt DateTime  @default(now())
   profile   Profile?
-  post      Post[]
+  posts     Post[]    @relation("UserPosts")
+  likes     Like[]
+  comments   Comment[]
 }
 
 model Profile {
@@ -49,12 +51,48 @@ model Profile {
 }
 
 model Post {
+  id           Int      @id @default(autoincrement())
+  content      String
+  imgUrl       String?
+  imgName      String?
+  imgPublicId  String?
+  videoUrl     String?
+  videoName    String?
+  videoPublicId String?
+  likeCount    Int      @default(0)
+  commentCount  Int      @default(0)
+  shareCount   Int      @default(0)
+  userId       Int
+  user         User      @relation("UserPosts", fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  likes        Like[]
+  comments     Comment[]
+}
+
+model Like {
   id        Int      @id @default(autoincrement())
-  content   String
-  imgUrl    String?
-  imgName   String?
-  videoUrl  String?
-  videoName String?
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+  status    Boolean  @default(true)
 }
+
+model Comment {
+  id               Int      @id @default(autoincrement())
+  content          String
+  imgUrl           String?
+  imgName          String?
+  imgPublicId      String?
+  videoUrl         String?
+  videoName        String?
+  videoPublicId    String?
+  userId           Int
+  user             User     @relation(fields: [userId], references: [id])
+  postId           Int
+  post             Post     @relation(fields: [postId], references: [id])
+  parentCommentId  Int?
+}
+
+

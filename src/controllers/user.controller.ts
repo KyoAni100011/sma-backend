@@ -28,7 +28,7 @@ const createAccount = async (req: Request, res: Response) => {
 
     const newUser = await prisma.user.create({
       data: { name, email, password: hashedPassword },
-      select: { name: true, email: true, role: true },
+      select: { id: true, name: true, email: true, role: true },
     });
 
     res
@@ -72,7 +72,7 @@ const loginAccount = async (req: Request, res: Response) => {
 
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { name: true, email: true, role: true },
+      select: { id: true, name: true, email: true, role: true },
     });
 
     res
